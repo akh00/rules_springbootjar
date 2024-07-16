@@ -1,0 +1,57 @@
+module( name = "rules_springbootjar", version = "0.0.1")
+
+bazel_dep(name = "rules_python", version="0.34.0")
+
+bazel_dep(
+    name = "aspect_bazel_lib",
+    version = "2.5.3",
+)
+
+python = use_extension(
+    "@rules_python//python/extensions:python.bzl",
+    "python",
+)
+
+python.toolchain(
+    configure_coverage_tool = True,
+    ignore_root_user_error = True,
+    python_version = "3.12",
+    is_default=True,
+    )
+
+bazel_dep(
+    name = "rules_jvm_external",
+    version = "6.0",
+    dev_dependency = True,
+)
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
+
+#versions
+springVersion = "6.1.3"
+
+springBootVersion = "3.2.2"
+
+maven.install(
+    artifacts = [
+        #Spring
+        "org.springframework.boot:spring-boot-starter-security:%s" % springBootVersion,
+        "org.springframework.boot:spring-boot-starter-data-redis:%s" % springBootVersion,
+        "org.springframework.boot:spring-boot-starter-web:%s" % springBootVersion,
+        "org.springframework.boot:spring-boot-starter-actuator:%s" % springBootVersion,
+       "org.springframework.boot:spring-boot-starter-jetty:%s" % springBootVersion,
+        "org.springframework.boot:spring-boot-loader:%s" % springBootVersion,
+        "org.springframework.boot:spring-boot-autoconfigure:%s" % springBootVersion,
+        "ch.qos.logback:logback-classic:1.5.6",
+        "ch.qos.logback:logback-core:1.5.6",
+    ],
+    excluded_artifacts = [
+       "org.springframework.boot:spring-boot-starter-tomcat",
+    ],
+
+    fetch_sources = True,
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")

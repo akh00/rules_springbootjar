@@ -1,0 +1,23 @@
+# generated
+**/src/generated/
+
+# Gradle
+.gradle/
+build/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+out/
+
+bin/
+.ijwb/
+.vscode/
+bazel-*
+
+# Mac
+.DS_Store
+
+.bazelrc.user
+

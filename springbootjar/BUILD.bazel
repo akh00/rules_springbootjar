@@ -1,0 +1,14 @@
+
+exports_files([
+    "springbootjar.bzl",
+    "springbootjar.py",
+])
+
+
+py_binary(
+    name = "springbootjar",
+    srcs = [
+        "springbootjar.py",
+    ],
+    visibility = ["//visibility:public"],
+)
