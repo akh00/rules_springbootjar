@@ -7,24 +7,24 @@ springboot_deps = [
     "@maven//:org_springframework_boot_spring_boot",
     "@maven//:org_springframework_boot_spring_boot_autoconfigure",
     "@maven//:org_springframework_boot_spring_boot_actuator_autoconfigure",
+    "@maven//:org_springframework_boot_spring_boot_starter_jetty",
     "@maven//:org_springframework_boot_spring_boot_starter_web",
 ]
 
 
 java_library(
-    name = "example_lib",
+    name = "example_applib",
     srcs = glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**"]),
     visibility = ["//visibility:public"],
-#    resources = glob(["src/main/resources/**"]),
-    deps = springboot_deps,
+    deps = springboot_deps + ["//example/lib"],
 )
 
 springbootjar(
-    name = "sampleapp",
+    name = "example_app_boot",
     boot_app_class = "com.bazel.springbootjar.examples.app.App",
     boot_launcher_class = "org.springframework.boot.loader.launch.JarLauncher",
-    java_library = ":example_lib",
-
-    deps = ["@maven//:org_springframework_boot_spring_boot_loader"],
+    java_library = ":example_applib",
+    deps = ["@maven//:org_springframework_boot_spring_boot_loader", "//example/indirectLib"],
 )
 

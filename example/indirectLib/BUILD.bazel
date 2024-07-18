@@ -1,0 +1,7 @@
+java_library(
+    name = "indirectLib",
+    resources = glob(["src/main/resources/**"]),
+    visibility = ["//visibility:public"],
+)
+
+

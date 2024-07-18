@@ -13,12 +13,12 @@ Main-Class: {0}
 Start-Class: {1}
 """
 
+unified_date = 1325372400
 
-def springbootjar_impl(appjar, bootloader, mainclass, outputjar, deplibs):
+
+def _springbootjar_impl(appjar, bootloader, mainclass, outputjar, deplibs):
     try:
-        orig_dir = os.getcwd()
-        tempfile.tempdir = orig_dir
-        logger.error(f"orig_dir {orig_dir=}")
+        tempfile.tempdir = os.getcwd()
         with tempfile.TemporaryDirectory() as base_working_dir:
             working_dir = base_working_dir + "/working"
             boot_classes = working_dir + "/BOOT-INF/classes"
@@ -31,17 +31,15 @@ def springbootjar_impl(appjar, bootloader, mainclass, outputjar, deplibs):
                 manifest.write(manifest_template.format(bootloader, mainclass))
             with zipfile.ZipFile(appjar, 'r') as app_jar_ref:
                 app_jar_ref.extractall(boot_classes)
-            deplibs.remove(appjar)
+            if appjar in deplibs: deplibs.remove(appjar)
             for jarname in deplibs:
-                #   logger.info(f"jarpath {jarname=}")
                 if ("spring-boot-loader" in jarname
-                    or "spring_boot_loader" in jarname):
+                   or "spring_boot_loader" in jarname):
                     with zipfile.ZipFile(jarname, "r") as loader_jar:
                         loader_jar.extractall(working_dir,
                                               [info for info in loader_jar.infolist()
-                                               if ((info.filename.startswith("org/") or
-                                                    info.filename.startswith("com/") or
-                                                    info.filename.startswith("META-INF/services/"))
+                                               if ((not info.filename.startswith("META-INF/")
+                                                   or info.filename.startswith("META-INF/services"))
                                                    and not info.is_dir())])
                 else:
                     base_jar_name = os.path.basename(jarname)
@@ -49,25 +47,28 @@ def springbootjar_impl(appjar, bootloader, mainclass, outputjar, deplibs):
                         shutil.copy(jarname, boot_libs)
                     else:
                         logger.warning(f"skipping duplicate file {jarname=}")
-            #   logger.info(f"creating output jar {outputjar=}")
             with zipfile.ZipFile(outputjar, 'w') as jarf:
                 for root, dirs, files in os.walk(working_dir):
-                    for dir in dirs:
-                        file_path = os.path.join(root, dir)
+                    for directory in dirs:
+                        file_path = os.path.join(root, directory)
                         archive_path = os.path.relpath(file_path, working_dir)
+                        os.utime(file_path, (unified_date, unified_date))
                         jarf.write(file_path, archive_path)
                     for file in files:
                         file_path = os.path.join(root, file)
                         archive_path = os.path.relpath(file_path, working_dir)
+                        os.utime(file_path, (unified_date, unified_date))
                         jarf.write(file_path, archive_path)
 
     except Exception as err:
         logger.error(f"Unexpected {err=}, {type(err)=}, {err.args=}")
+        if os.path.isfile(outputjar):   # output jar should be removed
+            os.remove(outputjar)
     return
 
 
 def run(appjar, bootloader, mainclass, outputjar, deplibs):
-    springbootjar_impl(appjar, bootloader, mainclass, outputjar, deplibs)
+    _springbootjar_impl(appjar, bootloader, mainclass, outputjar, deplibs)
 
 
 if __name__ == "__main__":
