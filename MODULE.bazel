@@ -1,4 +1,4 @@
-module( name = "rules_springbootjar", version = "0.0.2")
+module( name = "rules_springbootjar", version = "0.0.3")
 
 bazel_dep(name = "rules_python", version="0.34.0")
 
